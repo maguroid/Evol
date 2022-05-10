@@ -20,3 +20,17 @@ a {
 * {
   box-sizing: border-box;
 }
+
+.highlight {
+  background: linear-gradient(transparent 60%, lightcyan 60%);
+}
+
+.button {
+  display: inline-block;
+  padding: 0.5em 1em;
+  border-radius: 0.3em;
+  background-color: rgb(78, 192, 192);
+  color: white;
+  font-weight: bold;
+  font-size: 1.2em;
+}
