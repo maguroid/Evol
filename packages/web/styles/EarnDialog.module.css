@@ -1,0 +1,12 @@
+.shimmer {
+  animation: shimmer 2s ease-out;
+}
+
+@keyframes shimmer {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
