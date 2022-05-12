@@ -40,7 +40,7 @@ export default function Mint() {
         </ul>
 
         <div className="m-auto">
-          <button className="button hover:animate-pulse" onClick={mint}>
+          <button className="button primary hover:animate-pulse" onClick={mint}>
             Mint now!
           </button>
         </div>
