@@ -4,6 +4,7 @@ import Layout from "@/components/Layout";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
+    // TODO: Supporting error layout
     <Layout>
       <Component {...pageProps} />
     </Layout>
