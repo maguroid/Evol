@@ -3,7 +3,6 @@ import Link from "next/link";
 import logo from "../assets/logo.svg";
 
 import { useWalletConnect } from "@/hooks/useWalletConnect";
-import { useEffect } from "react";
 
 export default function Header() {
   const { account, connectWallet } = useWalletConnect();
