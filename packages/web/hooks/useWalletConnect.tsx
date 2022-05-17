@@ -10,10 +10,7 @@ export function useWalletConnect() {
 
   const [account, setAccount] = useState("");
 
-  const getProvider = useCallback(async (): Promise<providers.Web3Provider> => {
-    const provider = await web3Modal.current?.connect();
-    console.log("connected");
-
+  const setListener = (provider: any) => {
     provider.on("chainChanged", (chainId: string) => {
       console.log("chainChanged: ", chainId);
     });
@@ -23,22 +20,44 @@ export function useWalletConnect() {
 
       if (account == null) {
         console.log("account disconnected");
+        web3Modal.current?.clearCachedProvider();
       } else {
         console.log("account changed: ", account);
       }
-
-      localStorage.setItem("account", account ?? "");
       setAccount(account);
     });
+  };
 
-    const web3Provider = new providers.Web3Provider(provider);
+  const getProvider =
+    useCallback(async (): Promise<providers.Web3Provider | null> => {
+      try {
+        const cachedProviderId = web3Modal.current?.cachedProvider;
 
-    return web3Provider;
-  }, [web3Modal]);
+        let provider;
+        if (cachedProviderId) {
+          provider = await web3Modal.current?.connectTo(cachedProviderId);
+        } else {
+          provider = await web3Modal.current?.connect();
+        }
+        console.log("connected");
+
+        setListener(provider);
+
+        const web3Provider = new providers.Web3Provider(provider);
+
+        return web3Provider;
+      } catch (err) {
+        console.error(err);
+        return null;
+      }
+    }, [web3Modal]);
 
   const connectWallet = useCallback(async () => {
     const provider = await getProvider();
-    if (provider == null) throw new Error("provider not found");
+    if (provider == null) {
+      console.error("provider not found");
+      return;
+    }
     const accounts = (await provider.send(
       "eth_requestAccounts",
       []
@@ -50,29 +69,38 @@ export function useWalletConnect() {
   }, [getProvider]);
 
   useEffect(() => {
-    const rpc = process.env.NEXT_PUBLIC_ALCHEMY_RPC_URL;
-    if (rpc == null) throw new Error("Missing rpc url on Alchemy");
+    async function load() {
+      const rpc = process.env.NEXT_PUBLIC_ALCHEMY_RPC_URL;
+      if (rpc == null) throw new Error("Missing rpc url on Alchemy");
 
-    web3Modal.current = new Web3Modal({
-      network: "goerli",
-      providerOptions: {
-        walletconnect: {
-          package: WalletConnect,
-          options: {
-            rpc: {
-              5: rpc,
+      web3Modal.current = new Web3Modal({
+        network: "goerli",
+        cacheProvider: true,
+        providerOptions: {
+          walletconnect: {
+            package: WalletConnect,
+            options: {
+              rpc: {
+                5: rpc,
+              },
             },
           },
         },
-      },
-    });
-  }, []);
+      });
 
-  // TODO: support caching provider
-  useEffect(() => {
-    const account = localStorage.getItem("account") ?? "";
+      const cachedProviderId = web3Modal.current?.cachedProvider;
 
-    setAccount(account);
+      if (cachedProviderId) {
+        const proxy = await web3Modal.current?.connectTo(cachedProviderId);
+        setListener(proxy);
+        const provider = new providers.Web3Provider(proxy);
+
+        const [account] = await provider.listAccounts();
+
+        if (account) setAccount(account);
+      }
+    }
+    load();
   }, []);
 
   return {

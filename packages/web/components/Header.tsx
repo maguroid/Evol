@@ -41,7 +41,7 @@ export default function Header() {
             {account.slice(0, 10)}...
           </div>
         ) : (
-          <button className="button primary" onClick={connectWallet}>
+          <button className="button primary shadow" onClick={connectWallet}>
             Connect Wallet
           </button>
         )}
